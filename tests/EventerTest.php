@@ -7,12 +7,15 @@ namespace Tests;
 use Exan\Eventer\Eventer;
 use Exan\Eventer\EventInterface;
 use Exan\Eventer\Exceptions\InvalidEventException;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 class EventerTest extends TestCase
 {
-    public function testItEmitsAnEvent()
+    #[Test]
+    public function it_emits_an_event()
     {
         $eventer = new Eventer();
 
@@ -46,7 +49,8 @@ class EventerTest extends TestCase
         $this->assertTrue($state->success);
     }
 
-    public function testItFiltersEvent()
+    #[Test]
+    public function it_filters_events()
     {
         $eventer = new Eventer();
 
@@ -81,7 +85,8 @@ class EventerTest extends TestCase
         $this->assertEquals([true], $state->runs);
     }
 
-    public function testItDoesNotClearFilteredEventsAfterNonMatchedFilters()
+    #[Test]
+    public function it_does_not_clear_filtered_events_after_non_matched_filters()
     {
         $eventer = new Eventer();
 
@@ -117,7 +122,8 @@ class EventerTest extends TestCase
         $this->assertEquals([true], $state->runs);
     }
 
-    public function testItDoesNotEmitOnEventsWithADifferentName()
+    #[Test]
+    public function it_does_not_emit_on_events_with_a_different_name()
     {
         $eventer = new Eventer();
 
@@ -173,7 +179,8 @@ class EventerTest extends TestCase
         $this->assertEquals([$shouldRunEvent::getEventName()], $state->runs);
     }
 
-    public function testBeforeRunsEarlierThanRegularListeners()
+    #[Test]
+    public function before_runs_earlier_than_regular_listeners()
     {
         $eventer = new Eventer();
 
@@ -229,10 +236,12 @@ class EventerTest extends TestCase
         $this->assertEquals(['before', 'listeners'], $state->runs);
     }
 
-    /**
-     * @dataProvider registerCombinationsProvider
-     */
-    public function testBeforeOnceRunsEarlierThanRegularListeners(string $first, string $second)
+    #[Test]
+    #[TestWith(['before', 'register'], 'Before, listeners')]
+    #[TestWith(['beforeOnce', 'register'], 'BeforeOnce, listeners')]
+    #[TestWith(['beforeOnce', 'registerOnce'], 'BeforeOnce, listenersOnce')]
+    #[TestWith(['before', 'registerOnce'], 'Before, listenersOnce')]
+    public function before_once_runs_earlier_than_regular_listeners(string $first, string $second)
     {
         $eventer = new Eventer();
 
@@ -288,32 +297,10 @@ class EventerTest extends TestCase
         $this->assertEquals(['before', 'listeners'], $state->runs);
     }
 
-    public static function registerCombinationsProvider(): array
-    {
-        return [
-            'Before, listeners' => [
-                'first' => 'before',
-                'second' => 'register',
-            ],
-            'BeforeOnce, listeners' => [
-                'first' => 'beforeOnce',
-                'second' => 'register',
-            ],
-            'BeforeOnce, listenersOnce' => [
-                'first' => 'beforeOnce',
-                'second' => 'registerOnce',
-            ],
-            'Before, listenersOnce' => [
-                'first' => 'before',
-                'second' => 'registerOnce',
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider onceRegistrarsProvider
-     */
-    public function testItActivatesOnceListenersOneTime(string $registrar)
+    #[Test]
+    #[TestWith(['registerOnce'], 'Register')]
+    #[TestWith(['beforeOnce'], 'Before')]
+    public function it_activates_once_listeners_one_time(string $registrar)
     {
         $eventer = new Eventer();
 
@@ -348,18 +335,12 @@ class EventerTest extends TestCase
         $this->assertEquals(1, $state->runs);
     }
 
-    public static function onceRegistrarsProvider(): array
-    {
-        return [
-            'Register' => ['registrar' => 'registerOnce'],
-            'Before' => ['registrar' => 'beforeOnce'],
-        ];
-    }
-
-    /**
-     * @dataProvider registrarProvider
-     */
-    public function testItThrowsAnExceptionWithoutEventInterface(string $registrar)
+    #[Test]
+    #[TestWith(['register'], 'Register')]
+    #[TestWith(['registerOnce'], 'Register once')]
+    #[TestWith(['before'], 'Before')]
+    #[TestWith(['beforeOnce'], 'Before once')]
+    public function it_throws_an_exception_without_event_interface(string $registrar)
     {
         $eventer = new Eventer();
 
@@ -368,15 +349,5 @@ class EventerTest extends TestCase
 
         $this->expectException(InvalidEventException::class);
         call_user_func_array([$eventer, $registrar], [$event::class]);
-    }
-
-    public static function registrarProvider(): array
-    {
-        return [
-            'Register' => ['registrar' => 'register'],
-            'Register once' => ['registrar' => 'registerOnce'],
-            'Before' => ['registrar' => 'before'],
-            'Before once' => ['registrar' => 'beforeOnce'],
-        ];
     }
 }
