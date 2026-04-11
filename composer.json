@@ -11,8 +11,8 @@
     "scripts": {
         "md": "phpmd src text ruleset.xml",
 
-        "cs": "phpcs --standard=PSR12 src tests",
-        "csf": "phpcbf --standard=PSR12 src tests",
+        "cs": "phpcs",
+        "csf": "phpcbf",
 
         "test": "phpunit",
         "test-coverage": "@php -d xdebug.mode=coverage ./vendor/bin/phpunit --coverage-html .phpunit.cache/cov-html"
